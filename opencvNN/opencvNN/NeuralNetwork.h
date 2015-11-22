@@ -17,9 +17,6 @@ public:
 		output = o;
 		error = eo;
 	}
-
-
-
 };
 
 class Weight
