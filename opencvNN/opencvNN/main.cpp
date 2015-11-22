@@ -3,9 +3,11 @@
 #include <random>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include "NeuralNetwork.h"
 #include <stdio.h>
 #include <dirent.h>
+#include <unordered_map>
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
 	#include <direct.h>
@@ -18,7 +20,7 @@
 using namespace std;
 using namespace cv;
 
-bool getFileNamesFromDir(string dirName)
+bool getFileNamesFromDir(string dirName, string parentDir, unordered_map<string, vector<string>> & results)
 {
 	char slash = '\\';
 	DIR *dir;
@@ -29,20 +31,28 @@ bool getFileNamesFromDir(string dirName)
 		/* print all the files and directories within directory */
 		while ((ent = readdir(dir)) != NULL)
 		{
-			//results.push_back(ent->d_name);
-			printf("Loaded %s\n", ent->d_name);
+			
 			if (ent->d_type == DT_DIR)
 			{
 				
 				if ((strcmp(ent->d_name, ".") != 0) && (strcmp(ent->d_name, "..") != 0))
 				{
+
 					printf(NulPosition, "%c%s", slash, ent->d_name);
-					if (getFileNamesFromDir(dirName + ent->d_name))
+					if (getFileNamesFromDir(dirName + ent->d_name, ent->d_name, results))
 					{
 						closedir(dir);
 						return 1;
 					}
 					*NulPosition = '\0';
+				}
+			}
+			else
+			{
+				if ((strcmp(ent->d_name, ".") != 0) && (strcmp(ent->d_name, "..") != 0))
+				{
+					printf("Loaded %s\n", ent->d_name);
+					results[parentDir].push_back(dirName + slash + ent->d_name);
 				}
 			}
 		}
@@ -70,13 +80,30 @@ int main(int argc, char** argv)
 	cCurrentPath[sizeof(cCurrentPath) - 1] = '\0'; /* not really required */
 
 	string trainingPath = "E://Owner//My Documents//c_CAP4630//NeuralNet_ScreenReader//Training Data//";
+
+	unordered_map<string, vector<string>> expectedToImageFilePaths;
+
+	cout << "Initiating training data at ";
 	//trainingPath += "/Training Data/";
-	//cout << trainingPath << endl;
+	cout << trainingPath << endl;
 	//printf("The current working directory is %s", cCurrentPath);
 
-	//vector<string> imageNames = 
-	getFileNamesFromDir(trainingPath);
+	getFileNamesFromDir(trainingPath, "", expectedToImageFilePaths);
 
+
+	// map expected values to vector for later
+	vector<string> expectedValueKeys;
+
+	unordered_map<string, vector<string> >::iterator iter = expectedToImageFilePaths.begin();
+
+	while (iter != expectedToImageFilePaths.end())
+	{
+		expectedValueKeys.push_back(iter->first);
+		iter++;
+	}
+
+
+	cout << "Ready." << endl;
 
 	while (true)
 	{
@@ -92,7 +119,16 @@ int main(int argc, char** argv)
 
 			for (int i = 0; i < trainingSize; i++)
 			{
-				//Mat image = imread(trainingPath, IMREAD_GRAYSCALE) > 128;
+				int randLetterIndex = rand() % expectedValueKeys.size();
+				string expectedLetter = expectedValueKeys[randLetterIndex];
+				int imageFileNameCount = expectedToImageFilePaths[expectedLetter].size();
+				string randPath = expectedToImageFilePaths[expectedLetter][rand() % imageFileNameCount];
+				
+				Mat rawImage = imread( randPath , IMREAD_GRAYSCALE) > 128;
+
+				Size size(16, 16);
+				Mat transformedImage;
+				resize(rawImage, transformedImage, size);
 
 				nn.Train(rand() % 10);
 				if (i % 100 == 0)
