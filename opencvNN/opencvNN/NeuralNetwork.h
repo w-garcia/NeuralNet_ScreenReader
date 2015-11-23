@@ -39,17 +39,17 @@ public:
 	int errorCount = 0;
 	int expectedNumber = 0;
 	int pickedNumber = 0;
+
 	double trainingNoise = 0.03;
 	double testNoise = 0.06;
-	double learningRate = 0.01;
+	double learningRate = 0.0020;
 	double weightDecay = 1.0;
 	double momentumFactor = 0.1;
 
-	TrainingDataSet dataSet;
+	Data data;
 
-	NeuralNetwork(vector<unsigned int> sizeOfLayers)
+	NeuralNetwork( vector<unsigned int> sizeOfLayers )
 	{
-		dataSet = TrainingDataSet();
 
 		unsigned int layerI;
 		for (layerI = 0; layerI < sizeOfLayers.size(); layerI++)
@@ -107,11 +107,12 @@ public:
 		}
 	}
 
-	void Train(int dataSetNumber)
+	void Train(int dataSetNumber, cv::Mat d)
 	{
+		data = Data(d);
 		expectedNumber = dataSetNumber;
-		getInputsAndExpectedValuesFrom(dataSetNumber);
-		randomizeInputs(trainingNoise);
+		getInputsAndExpectedValuesFrom();
+		//randomizeInputs(trainingNoise);
 		feedForward();
 		if (pickedNumber != expectedNumber) errorCount++;
 		backProp();
@@ -120,8 +121,8 @@ public:
 	void Test(int dataSetNumber)
 	{
 		expectedNumber = dataSetNumber;
-		getInputsAndExpectedValuesFrom(dataSetNumber);
-		randomizeInputs(testNoise);
+		getInputsAndExpectedValuesFrom();
+		//randomizeInputs(testNoise);
 		feedForward();
 		if (pickedNumber != expectedNumber) errorCount++;
 	}
@@ -228,16 +229,16 @@ public:
 		}
 	}
 
-	void getInputsAndExpectedValuesFrom(int dataSetNumber)
+	void getInputsAndExpectedValuesFrom()
 	{
 		for (unsigned int i = 0; i < layerToNeuron[inputLayerIndex].size(); i++)
 		{
-			layerToNeuron[inputLayerIndex][i].output = dataSet.dataList[dataSetNumber].doubleList[i];
+			layerToNeuron[inputLayerIndex][i].output = data.doubleList[i];
 		}
 		expectedOutput.clear();
 		for (unsigned int neuronI = 0; neuronI < layerToNeuron[outputLayerIndex].size(); neuronI++)
 		{
-			if (neuronI == dataSet.expectedValue[dataSetNumber])
+			if (neuronI == expectedNumber)
 			{
 				expectedOutput.push_back(0.8);
 			}

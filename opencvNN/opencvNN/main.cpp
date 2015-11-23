@@ -67,9 +67,6 @@ int main(int argc, char** argv)
 {
 	srand((unsigned int) time(NULL));
 
-	vector<unsigned int> sizes = { 64, 64, 64, 10 };
-	NeuralNetwork nn(sizes);
-
 	char cCurrentPath[FILENAME_MAX];
 
 	if (!GetCurrentDir(cCurrentPath, sizeof(cCurrentPath)))
@@ -102,26 +99,30 @@ int main(int argc, char** argv)
 		iter++;
 	}
 
+	// setup nn with what we know
+	vector<unsigned int> sizes = { 256, 256, 256, (unsigned int) expectedValueKeys.size() }; 
+	NeuralNetwork nn(sizes);
 
 	cout << "Ready." << endl;
 
 	while (true)
 	{
-		string n;
-		cin >> n;
+		string n = "train";
+		//cin >> n;
 
 		if (n == "train")
 		{
-			int trainingSize = 0;
-			cin >> trainingSize;
+			int trainingSize = 100000;
+			//cin >> trainingSize;
 
 			nn.errorCount = 0;
+			//nn.expectedOutput = expectedValueKeys;
 
 			for (int i = 0; i < trainingSize; i++)
 			{
 				int randLetterIndex = rand() % expectedValueKeys.size();
 				string expectedLetter = expectedValueKeys[randLetterIndex];
-				int imageFileNameCount = expectedToImageFilePaths[expectedLetter].size();
+				int imageFileNameCount = (int) expectedToImageFilePaths[expectedLetter].size() / 10;
 				string randPath = expectedToImageFilePaths[expectedLetter][rand() % imageFileNameCount];
 				
 				Mat rawImage = imread( randPath , IMREAD_GRAYSCALE) > 128;
@@ -130,10 +131,11 @@ int main(int argc, char** argv)
 				Mat transformedImage;
 				resize(rawImage, transformedImage, size);
 
-				nn.Train(rand() % 10);
+				nn.Train(randLetterIndex, transformedImage);
+
 				if (i % 100 == 0)
 				{
-					cout << "Expected Num: " << nn.expectedNumber << " " << "NN Guess: " << nn.pickedNumber << endl;
+					cout << "Expected Index: " << nn.expectedNumber << " " << "NN Guess: " << nn.pickedNumber << endl;
 				}
 			}
 
@@ -149,7 +151,7 @@ int main(int argc, char** argv)
 			cin >> testingCount;
 			for (int i = 0; i < testingCount; i++)
 			{
-				nn.Test(rand() % 10);
+				//nn.Test(rand() % 10);
 				if (i % 100 == 0)
 				{
 					cout << "Expected Num: " << nn.expectedNumber << " " << "NN Guess: " << nn.pickedNumber << endl;
