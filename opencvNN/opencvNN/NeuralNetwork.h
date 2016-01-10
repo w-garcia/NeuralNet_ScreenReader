@@ -149,6 +149,7 @@ public:
 	}
 
 	void feedForward()
+
 	{
 		double total;
 		for (unsigned int toLayerI = 1; toLayerI < layerToNeuron.size(); toLayerI++)

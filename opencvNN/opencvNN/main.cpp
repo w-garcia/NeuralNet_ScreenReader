@@ -98,7 +98,7 @@ int main(int argc, char** argv)
 	}
 
 	// setup nn 
-	vector<unsigned int> sizes = { 64, 64, (unsigned int) expectedValueKeys.size() }; 
+	vector<unsigned int> sizes = { 64, 256, 128, (unsigned int) expectedValueKeys.size() }; 
 	NeuralNetwork nn(sizes);
 
 	cout << "Ready." << endl;
