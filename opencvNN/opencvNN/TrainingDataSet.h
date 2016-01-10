@@ -37,11 +37,11 @@ public:
 		{
 			if ((int)temp[i] > 128)
 			{
-				doubleList.push_back(0.8); 
+				doubleList.push_back(1); 
 			}
 			else
 			{
-				doubleList.push_back(0.2);
+				doubleList.push_back(0);
 			}
 		}
 	}

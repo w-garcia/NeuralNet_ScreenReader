@@ -76,14 +76,12 @@ int main(int argc, char** argv)
 
 	cCurrentPath[sizeof(cCurrentPath) - 1] = '\0'; /* not really required */
 
-	string trainingPath = "E://Owner//My Documents//c_CAP4630//NeuralNet_ScreenReader//Training Data//";
+	string trainingPath = "C://ML//opencvNN//Training Data small//";//"E://Owner//My Documents//c_CAP4630//NeuralNet_ScreenReader//Training Data//";
 
 	unordered_map<string, vector<string>> expectedToImageFilePaths;
 
 	cout << "Initiating training data at ";
-	//trainingPath += "/Training Data/";
 	cout << trainingPath << endl;
-	//printf("The current working directory is %s", cCurrentPath);
 
 	getFileNamesFromDir(trainingPath, "", expectedToImageFilePaths);
 
@@ -99,8 +97,8 @@ int main(int argc, char** argv)
 		iter++;
 	}
 
-	// setup nn with what we know
-	vector<unsigned int> sizes = { 256, 256, 256, (unsigned int) expectedValueKeys.size() }; 
+	// setup nn 
+	vector<unsigned int> sizes = { 64, 64, (unsigned int) expectedValueKeys.size() }; 
 	NeuralNetwork nn(sizes);
 
 	cout << "Ready." << endl;
@@ -110,32 +108,55 @@ int main(int argc, char** argv)
 		string n = "train";
 		//cin >> n;
 
+		n = "train";
 		if (n == "train")
 		{
-			int trainingSize = 100000;
-			//cin >> trainingSize;
+			int trainingSize = 0;
+			cin >> trainingSize;
+			//trainingSize = 5;
 
 			nn.errorCount = 0;
-			//nn.expectedOutput = expectedValueKeys;
 
 			for (int i = 0; i < trainingSize; i++)
-			{
+			{ 
 				int randLetterIndex = rand() % expectedValueKeys.size();
 				string expectedLetter = expectedValueKeys[randLetterIndex];
-				int imageFileNameCount = (int) expectedToImageFilePaths[expectedLetter].size() / 10;
+				int imageFileNameCount = (int) expectedToImageFilePaths[expectedLetter].size();
 				string randPath = expectedToImageFilePaths[expectedLetter][rand() % imageFileNameCount];
 				
-				Mat rawImage = imread( randPath , IMREAD_GRAYSCALE) > 128;
+				Mat rawImage = imread( randPath , IMREAD_GRAYSCALE) > 100;
 
-				Size size(16, 16);
+				Size size(8, 8);
 				Mat transformedImage;
 				resize(rawImage, transformedImage, size);
+
 
 				nn.Train(randLetterIndex, transformedImage);
 
 				if (i % 100 == 0)
 				{
-					cout << "Expected Index: " << nn.expectedNumber << " " << "NN Guess: " << nn.pickedNumber << endl;
+					int spaces = 5 - expectedValueKeys[nn.expectedNumber].length();
+
+					cout << "Expected Letter: " << expectedValueKeys[nn.expectedNumber];
+
+					switch (spaces)
+					{
+					case 1:
+						cout << " ";
+						break;
+					case 2:
+						cout << " " << " ";
+						break;
+					case 3:
+						cout << " " << " " << " ";
+						break;
+					case 4:
+						cout << " " << " " << " " << " ";
+						break;
+					}
+
+					cout<< "NN Guess: " << expectedValueKeys[nn.pickedNumber] << endl;
+
 				}
 			}
 
@@ -146,17 +167,39 @@ int main(int argc, char** argv)
 		}
 		else if (n == "test")
 		{
+			int trainingSize = 0;
+			cin >> trainingSize;
+
 			nn.errorCount = 0;
-			int testingCount;
-			cin >> testingCount;
-			for (int i = 0; i < testingCount; i++)
+
+			for (int i = 0; i < trainingSize; i++)
 			{
-				//nn.Test(rand() % 10);
+				int randLetterIndex = rand() % expectedValueKeys.size();
+				string expectedLetter = expectedValueKeys[randLetterIndex];
+				int imageFileNameCount = (int)expectedToImageFilePaths[expectedLetter].size() / 10;
+				string randPath = expectedToImageFilePaths[expectedLetter][rand() % imageFileNameCount];
+
+				Mat rawImage = imread(randPath, IMREAD_GRAYSCALE) > 128;
+
+				Size size(16, 16);
+				Mat transformedImage;
+				resize(rawImage, transformedImage, size);
+
+
+				nn.Train(randLetterIndex, transformedImage);
+
 				if (i % 100 == 0)
 				{
-					cout << "Expected Num: " << nn.expectedNumber << " " << "NN Guess: " << nn.pickedNumber << endl;
+					cout << "Expected Letter: " << expectedValueKeys[nn.expectedNumber] << " " << "NN Guess: " << expectedValueKeys[nn.pickedNumber] << endl;
+
+					namedWindow("CAP4630 Intro to AI Washington Garcia ", WINDOW_AUTOSIZE);
+					imshow("CAP4630 Intro to AI Washington Garcia", transformedImage);
+					waitKey(0);
 				}
 			}
+
+
+
 			cout << nn.errorCount << endl;
 
 		}

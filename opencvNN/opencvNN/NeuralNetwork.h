@@ -40,11 +40,11 @@ public:
 	int expectedNumber = 0;
 	int pickedNumber = 0;
 
-	double trainingNoise = 0.03;
+	double trainingNoise = 0.01;
 	double testNoise = 0.06;
-	double learningRate = 0.0020;
+	double learningRate = 0.02;
 	double weightDecay = 1.0;
-	double momentumFactor = 0.1;
+	double momentumFactor = 0.01;
 
 	Data data;
 
@@ -57,8 +57,9 @@ public:
 			layerToNeuron.push_back(vector<Neuron>());
 			for (unsigned int neuronI = 0; neuronI < sizeOfLayers[layerI]; neuronI++)
 			{
-				//layerToNeuron[layerI].push_back(Neuron(layerI + 0.01, neuronI + 0.2));
-				layerToNeuron[layerI].push_back(Neuron(0.01, 0.2));
+				//layerToNeuron[layerI].push_back(Neuron(0.01, 0.2));
+				layerToNeuron[layerI].push_back(Neuron(randD(0.01, 1.0), randD(0.01, 1.0)));
+
 
 			}
 		}
@@ -112,17 +113,18 @@ public:
 		data = Data(d);
 		expectedNumber = dataSetNumber;
 		getInputsAndExpectedValuesFrom();
-		//randomizeInputs(trainingNoise);
+		randomizeInputs(trainingNoise);
 		feedForward();
 		if (pickedNumber != expectedNumber) errorCount++;
 		backProp();
 	}
 	
-	void Test(int dataSetNumber)
+	void Test(int dataSetNumber, cv::Mat d)
 	{
+		data = Data(d);
 		expectedNumber = dataSetNumber;
 		getInputsAndExpectedValuesFrom();
-		//randomizeInputs(testNoise);
+		randomizeInputs(testNoise);
 		feedForward();
 		if (pickedNumber != expectedNumber) errorCount++;
 	}
@@ -134,13 +136,13 @@ public:
 			if (chance(p))
 			{
 				Neuron ne = layerToNeuron[inputLayerIndex][i];
-				if (ne.output == 0.8)
+				if (ne.output == 1)
 				{
-					ne.output = 0.2;
+					ne.output = 0;
 				}
 				else
 				{
-					ne.output = 0.8;
+					ne.output = 1;
 				}
 			}
 		}
@@ -153,13 +155,15 @@ public:
 		{
 			for (unsigned int toNeuronI = 0; toNeuronI < layerToNeuron[toLayerI].size(); toNeuronI++)
 			{
+				// tally up weights of previous layer
 				total = 0.0;
 				unsigned int fromNeuronI;
 				for (fromNeuronI = 0; fromNeuronI < layerToNeuron[toLayerI - 1].size(); fromNeuronI++)
 				{
 					total += layerToNeuron[toLayerI - 1][fromNeuronI].output * VVVweight[toLayerI][toNeuronI][fromNeuronI].value;
 				}
-				//total += 1.0 * VVVweight[toLayerI][toNeuronI][fromNeuronI].value;
+				total += 1.0 * VVVweight[toLayerI][toNeuronI][fromNeuronI].value;
+
 				layerToNeuron[toLayerI][toNeuronI].output = sigmoid(total);
 			}
 		}
@@ -182,7 +186,6 @@ public:
 
 		for (unsigned int iNeuron = 0; iNeuron < layerToNeuron[outputLayerIndex].size(); iNeuron++)
 		{
-			// chained sigmoidPrime to sigmoid
 			layerToNeuron[layerI][iNeuron].error = (expectedOutput[iNeuron] - layerToNeuron[layerI][iNeuron].output) * sigmoidPrime(layerToNeuron[layerI][iNeuron].output);
 		}
 
@@ -195,7 +198,6 @@ public:
 				{
 					totalE += layerToNeuron[layerI + 1][toNeuronI].error * VVVweight[layerI + 1][toNeuronI][neuronI].value;
 				}
-				// chained sigmoidPrime to sigmoid
 				//ne.error = totalE * sigmoid(ne.output);
 				layerToNeuron[layerI][neuronI].error = totalE * sigmoidPrime(layerToNeuron[layerI][neuronI].output);
 
@@ -240,11 +242,11 @@ public:
 		{
 			if (neuronI == expectedNumber)
 			{
-				expectedOutput.push_back(0.8);
+				expectedOutput.push_back(1);
 			}
 			else
 			{
-				expectedOutput.push_back(0.2);
+				expectedOutput.push_back(0);
 			}
 		}
 	}

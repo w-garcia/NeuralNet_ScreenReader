@@ -31,6 +31,11 @@ static double sigmoidPrime(double x)
 	return x * (1.0 - x);
 }
 
+static double hyperbolicTangent(double x)
+{
+	return 1.7159 * tanh((2 / 3)*x);
+}
+
 static double sigmoid(double x)
 {
 	return 1 / (1.0 + exp(-x));
