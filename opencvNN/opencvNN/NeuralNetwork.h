@@ -42,9 +42,9 @@ public:
 
 	double trainingNoise = 0.01;
 	double testNoise = 0.06;
-	double learningRate = 0.02;
+	double learningRate = 0.08;
 	double weightDecay = 1.0;
-	double momentumFactor = 0.01;
+	double momentumFactor = 0.04;
 
 	Data data;
 
@@ -113,7 +113,7 @@ public:
 		data = Data(d);
 		expectedNumber = dataSetNumber;
 		getInputsAndExpectedValuesFrom();
-		randomizeInputs(trainingNoise);
+		//randomizeInputs(trainingNoise);
 		feedForward();
 		if (pickedNumber != expectedNumber) errorCount++;
 		backProp();

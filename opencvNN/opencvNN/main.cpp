@@ -51,7 +51,7 @@ bool getFileNamesFromDir(string dirName, string parentDir, unordered_map<string,
 			{
 				if ((strcmp(ent->d_name, ".") != 0) && (strcmp(ent->d_name, "..") != 0))
 				{
-					printf("Loaded %s\n", ent->d_name);
+					//printf("Loaded %s\n", ent->d_name);
 					results[parentDir].push_back(dirName + slash + ent->d_name);
 				}
 			}
@@ -124,7 +124,7 @@ int main(int argc, char** argv)
 				int imageFileNameCount = (int) expectedToImageFilePaths[expectedLetter].size();
 				string randPath = expectedToImageFilePaths[expectedLetter][rand() % imageFileNameCount];
 				
-				Mat rawImage = imread( randPath , IMREAD_GRAYSCALE) > 100;
+				Mat rawImage = imread(randPath, IMREAD_GRAYSCALE) > 100;
 
 				Size size(8, 8);
 				Mat transformedImage;
